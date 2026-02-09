@@ -1,12 +1,14 @@
+import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./auth";
-import Login from "./pages/Login";
-import Board from "./pages/Board";
-import Tv from "./pages/Tv";
+import { AuthProvider, useAuth } from "./auth.jsx";
+import Login from "./pages/Login.jsx";
+import Board from "./pages/Board.jsx";
+import Tv from "./pages/Tv.jsx";
 
-function Private({ children }) {
+function PrivateRoute({ children }) {
   const { token } = useAuth();
-  return token ? children : <Navigate to="/login" replace />;
+  if (!token) return <Navigate to="/login" replace />;
+  return children;
 }
 
 export default function App() {
@@ -16,21 +18,22 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
-            path="/"
+            path="/tv"
             element={
-              <Private>
-                <Board />
-              </Private>
+              <PrivateRoute>
+                <Tv />
+              </PrivateRoute>
             }
           />
           <Route
-            path="/tv"
+            path="/"
             element={
-              <Private>
-                <Tv />
-              </Private>
+              <PrivateRoute>
+                <Board />
+              </PrivateRoute>
             }
           />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

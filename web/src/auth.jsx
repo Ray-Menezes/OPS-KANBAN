@@ -1,32 +1,36 @@
-import React, { createContext, useContext, useState } from "react";
-import axios from "axios";
+import React from "react";
+import { api } from "./api.js";
 
-const AuthCtx = createContext(null);
+const AuthCtx = React.createContext(null);
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [token, setToken] = React.useState(() => localStorage.getItem("token") || "");
+  const [user, setUser] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem("user") || "null"); } catch { return null; }
+  });
 
   async function login(email, password) {
-    const res = await axios.post("http://localhost:4001/api/login", {
-      email,
-      password
-    });
-    localStorage.setItem("token", res.data.token);
-    setToken(res.data.token);
+    const res = await api.login(email, password);
+    localStorage.setItem("token", res.token);
+    localStorage.setItem("user", JSON.stringify(res.user));
+    setToken(res.token);
+    setUser(res.user);
   }
 
   function logout() {
     localStorage.removeItem("token");
-    setToken(null);
+    localStorage.removeItem("user");
+    setToken("");
+    setUser(null);
   }
 
-  return (
-    <AuthCtx.Provider value={{ token, login, logout }}>
-      {children}
-    </AuthCtx.Provider>
-  );
+  const value = React.useMemo(() => ({ token, user, login, logout }), [token, user]);
+
+  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 
 export function useAuth() {
-  return useContext(AuthCtx);
+  const ctx = React.useContext(AuthCtx);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
 }
