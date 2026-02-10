@@ -1,7 +1,7 @@
 # OPS Kanban (Fracht) — setup
 
 ## 1) Pré-requisitos
-- Node.js LTS instalado (recomendado 18+)
+- Node.js LTS instalado
 
 ## 2) Backend
 ```bash
